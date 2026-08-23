@@ -1,8 +1,8 @@
-# vite-vanilla-ts-template
+# match3
 
-[![build](https://github.com/remarkablemark/vite-vanilla-ts-template/actions/workflows/build.yml/badge.svg)](https://github.com/remarkablemark/vite-vanilla-ts-template/actions/workflows/build.yml)
-[![test](https://github.com/remarkablemark/vite-vanilla-ts-template/actions/workflows/test.yml/badge.svg)](https://github.com/remarkablemark/vite-vanilla-ts-template/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/remarkablemark/vite-vanilla-ts-template/graph/badge.svg?token=PwZ4954GBH)](https://codecov.io/gh/remarkablemark/vite-vanilla-ts-template)
+[![build](https://github.com/remarkablemark/match3/actions/workflows/build.yml/badge.svg)](https://github.com/remarkablemark/match3/actions/workflows/build.yml)
+[![test](https://github.com/remarkablemark/match3/actions/workflows/test.yml/badge.svg)](https://github.com/remarkablemark/match3/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/remarkablemark/match3/graph/badge.svg?token=PwZ4954GBH)](https://codecov.io/gh/remarkablemark/match3)
 
 Vite Vanilla TypeScript Template
 
@@ -11,8 +11,8 @@ Vite Vanilla TypeScript Template
 Clone the repository:
 
 ```sh
-git clone https://github.com/remarkablemark/vite-vanilla-ts-template.git
-cd vite-vanilla-ts-template
+git clone https://github.com/remarkablemark/match3.git
+cd match3
 ```
 
 Install the dependencies:
