@@ -2,7 +2,7 @@
 
 [![build](https://github.com/remarkablegames/match3/actions/workflows/build.yml/badge.svg)](https://github.com/remarkablegames/match3/actions/workflows/build.yml)
 [![test](https://github.com/remarkablegames/match3/actions/workflows/test.yml/badge.svg)](https://github.com/remarkablegames/match3/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/remarkablegames/match3/graph/badge.svg?token=PwZ4954GBH)](https://codecov.io/gh/remarkablegames/match3)
+[![codecov](https://codecov.io/gh/remarkablegames/match3/graph/badge.svg?token=yiIaBuRwzx)](https://codecov.io/gh/remarkablegames/match3)
 
 3️⃣ Match 3
 
