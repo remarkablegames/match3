@@ -38,6 +38,7 @@ export interface Renderer {
 }
 
 const PADDING = 8;
+const UI_HEIGHT = 80;
 
 /**
  * Creates a fresh visual state matching the logical grid size.
@@ -91,10 +92,12 @@ export function createRenderer(container: HTMLElement): Renderer {
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const boardDimension = Math.min(rect.width, rect.height) - PADDING * 2;
+    const availableWidth = rect.width - PADDING * 2;
+    const availableHeight = rect.height - UI_HEIGHT - PADDING * 2;
+    const boardDimension = Math.min(availableWidth, availableHeight);
     tileSize = boardDimension / GRID_SIZE;
     boardX = (rect.width - tileSize * GRID_SIZE) / 2;
-    boardY = (rect.height - tileSize * GRID_SIZE) / 2;
+    boardY = UI_HEIGHT + (rect.height - UI_HEIGHT - tileSize * GRID_SIZE) / 2;
 
     renderer.tileSize = tileSize;
     renderer.boardX = boardX;
