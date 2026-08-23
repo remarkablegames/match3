@@ -1,17 +1,21 @@
 # match3
 
-[![build](https://github.com/remarkablemark/match3/actions/workflows/build.yml/badge.svg)](https://github.com/remarkablemark/match3/actions/workflows/build.yml)
-[![test](https://github.com/remarkablemark/match3/actions/workflows/test.yml/badge.svg)](https://github.com/remarkablemark/match3/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/remarkablemark/match3/graph/badge.svg?token=PwZ4954GBH)](https://codecov.io/gh/remarkablemark/match3)
+[![build](https://github.com/remarkablegames/match3/actions/workflows/build.yml/badge.svg)](https://github.com/remarkablegames/match3/actions/workflows/build.yml)
+[![test](https://github.com/remarkablegames/match3/actions/workflows/test.yml/badge.svg)](https://github.com/remarkablegames/match3/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/remarkablegames/match3/graph/badge.svg?token=PwZ4954GBH)](https://codecov.io/gh/remarkablegames/match3)
 
-Vite Vanilla TypeScript Template
+3️⃣ Match 3
+
+Play the game on:
+
+- [remarkablegames](https://remarkablegames.org/match3/)
 
 ## Install
 
 Clone the repository:
 
 ```sh
-git clone https://github.com/remarkablemark/match3.git
+git clone https://github.com/remarkablegames/match3.git
 cd match3
 ```
 
