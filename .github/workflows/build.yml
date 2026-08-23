@@ -30,8 +30,9 @@ jobs:
 
       - name: Build app
         run: npm run build -- --base /${{ github.event.repository.name }}/
-        env:
-          VITE_GOOGLE_ANALYTICS_ID: ${{ secrets.GOOGLE_ANALYTICS_ID }}
+
+      - name: Check js13kGames size limit
+        run: npm run check:size
 
       - name: Deploy
         if: github.ref_name == 'master'

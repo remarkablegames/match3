@@ -1,26 +1,300 @@
 import './style.css';
 
-import viteLogo from '/vite.svg';
+import {
+  playInvalid,
+  playLose,
+  playMatch,
+  playSelect,
+  playSwap,
+  playWin,
+} from './audio';
+import { EMOJIS, type GameMode, GRID_SIZE } from './constants';
+import {
+  applyGravity,
+  areAdjacent,
+  checkEndConditions,
+  clearMatches,
+  createGameState,
+  createPlayableGrid,
+  findMatches,
+  hasValidMoves,
+  swapTiles,
+  updateTimer,
+  useMove,
+} from './game';
+import { attachInputHandlers } from './input';
+import {
+  createRenderer,
+  createVisuals,
+  type Renderer,
+  type VisualTile,
+} from './renderer';
+import type { GameState, Particle, Position } from './types';
 
-import { setupCounter } from './counter';
-import typescriptLogo from './typescript.svg';
+const ANIMATION_SPEED = 0.25;
+const MATCH_DELAY = 250;
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`;
+let state: GameState = createGameState('levels');
+let renderer: Renderer;
+let visuals: VisualTile[][] = createVisuals(GRID_SIZE);
+let particles: Particle[] = [];
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!);
+/**
+ * Spawns a small burst of rainbow particles at the given screen position.
+ */
+function spawnParticles(x: number, y: number, count = 8): void {
+  for (let i = 0; i < count; i += 1) {
+    const angle = (Math.PI * 2 * i) / count;
+    const speed = 2 + Math.random() * 3;
+    particles.push({
+      hue: Math.random() * 360,
+      life: 0.5 + Math.random() * 0.3,
+      maxLife: 0.8,
+      radius: 3 + Math.random() * 3,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      x,
+      y,
+    });
+  }
+}
+
+/**
+ * Lerp helper.
+ */
+function lerp(current: number, target: number, factor: number): number {
+  return current + (target - current) * factor;
+}
+
+/**
+ * Updates visual interpolation and particle simulation each frame.
+ */
+function updateAnimations(deltaTime: number): void {
+  for (let row = 0; row < GRID_SIZE; row += 1) {
+    for (let col = 0; col < GRID_SIZE; col += 1) {
+      const v = visuals[row][col];
+      v.offsetX = lerp(v.offsetX, 0, ANIMATION_SPEED);
+      v.offsetY = lerp(v.offsetY, 0, ANIMATION_SPEED);
+      v.scale = lerp(v.scale, 1, ANIMATION_SPEED);
+      v.opacity = lerp(v.opacity, 1, ANIMATION_SPEED);
+    }
+  }
+
+  particles = particles.filter((particle) => {
+    particle.x += particle.vx;
+    particle.y += particle.vy;
+    particle.vy += 0.1;
+    particle.life -= deltaTime;
+    return particle.life > 0;
+  });
+}
+
+/**
+ * Schedules match clearing and gravity with a short delay so the player can see
+ * the matched tiles.
+ */
+function processMatchesSequence(): Promise<void> {
+  return new Promise((resolve) => {
+    function step(combo: number): void {
+      const matches = findMatches(state.grid);
+      if (matches.length === 0) {
+        state.busy = false;
+        checkEndConditions(state);
+        if (state.gameOver && state.won) {
+          playWin();
+        } else if (state.gameOver && !state.won) {
+          playLose();
+        }
+        resolve();
+        return;
+      }
+
+      playMatch(combo);
+
+      const centerX =
+        renderer.boardX +
+        (matches.reduce((sum, pos) => sum + pos.col, 0) / matches.length) *
+          renderer.tileSize +
+        renderer.tileSize / 2;
+      const centerY =
+        renderer.boardY +
+        (matches.reduce((sum, pos) => sum + pos.row, 0) / matches.length) *
+          renderer.tileSize +
+        renderer.tileSize / 2;
+      spawnParticles(centerX, centerY, Math.min(matches.length, 12));
+
+      const { score } = clearMatches(state.grid, matches);
+      state.score += score;
+
+      // Shrink removed tiles visually.
+      for (const position of matches) {
+        const v = visuals[position.row][position.col];
+        v.scale = 0.1;
+        v.opacity = 0.1;
+      }
+
+      setTimeout(() => {
+        applyGravity(state.grid);
+        // Reset visuals for new tiles so they fade in.
+        for (let row = 0; row < GRID_SIZE; row += 1) {
+          for (let col = 0; col < GRID_SIZE; col += 1) {
+            if (visuals[row][col].opacity === 0.1) {
+              visuals[row][col].scale = 1;
+              visuals[row][col].opacity = 0;
+            }
+          }
+        }
+        step(combo + 1);
+      }, MATCH_DELAY);
+    }
+
+    step(1);
+  });
+}
+
+/**
+ * Attempts to swap two adjacent tiles and resolves matches if the move is valid.
+ */
+async function handleTileSelection(position: Position): Promise<void> {
+  if (state.busy || state.gameOver) {
+    return;
+  }
+
+  if (!state.selected) {
+    state.selected = position;
+    playSelect();
+    return;
+  }
+
+  const selected = state.selected;
+  if (selected.row === position.row && selected.col === position.col) {
+    state.selected = null;
+    return;
+  }
+
+  if (!areAdjacent(selected, position)) {
+    state.selected = position;
+    playSelect();
+    return;
+  }
+
+  state.busy = true;
+  state.selected = null;
+  playSwap();
+
+  // Animate swap offsets.
+  const dx = (position.col - selected.col) * renderer.tileSize;
+  const dy = (position.row - selected.row) * renderer.tileSize;
+  const v1 = visuals[selected.row][selected.col];
+  const v2 = visuals[position.row][position.col];
+  v1.offsetX = dx;
+  v1.offsetY = dy;
+  v2.offsetX = -dx;
+  v2.offsetY = -dy;
+
+  // Wait briefly for the swap animation.
+  await new Promise((resolve) => {
+    setTimeout(resolve, MATCH_DELAY);
+  });
+
+  swapTiles(state.grid, selected, position);
+
+  const matches = findMatches(state.grid);
+  if (matches.length === 0) {
+    // Invalid swap: swap back.
+    playInvalid();
+    swapTiles(state.grid, selected, position);
+    v1.offsetX = -dx;
+    v1.offsetY = -dy;
+    v2.offsetX = dx;
+    v2.offsetY = dy;
+    await new Promise((resolve) => {
+      setTimeout(resolve, MATCH_DELAY);
+    });
+    state.busy = false;
+    return;
+  }
+
+  useMove(state);
+  await processMatchesSequence();
+
+  // If no valid moves remain, reshuffle the board while preserving progress.
+  if (!hasValidMoves(state.grid)) {
+    state.grid = createPlayableGrid(GRID_SIZE, GRID_SIZE);
+    visuals = createVisuals(GRID_SIZE);
+  }
+}
+
+/**
+ * Resets the game with the same or a new mode.
+ */
+function startGame(mode: GameMode): void {
+  state = createGameState(mode);
+  visuals = createVisuals(GRID_SIZE);
+  particles = [];
+}
+
+/**
+ * Main animation loop.
+ */
+function loop(lastTime: number): void {
+  requestAnimationFrame((time) => {
+    const deltaTime = Math.min((time - lastTime) / 1000, 0.1);
+    updateTimer(state, deltaTime);
+    updateAnimations(deltaTime);
+    renderer.render(state, visuals, particles);
+    loop(time);
+  });
+}
+
+/**
+ * Initializes the game and mounts it into the provided element.
+ */
+function initGame(container: HTMLElement): void {
+  renderer = createRenderer(container);
+  visuals = createVisuals(GRID_SIZE);
+
+  attachInputHandlers(
+    state,
+    renderer.screenToGrid,
+    (position) => {
+      void handleTileSelection(position);
+    },
+    () => {
+      startGame(state.mode);
+    },
+  );
+
+  // Add simple mode buttons.
+  const controls = document.createElement('div');
+  controls.className = 'controls';
+
+  const modes: GameMode[] = ['levels', 'time', 'endless'];
+  for (const mode of modes) {
+    const button = document.createElement('button');
+    button.textContent =
+      mode === 'levels'
+        ? 'Levels'
+        : mode === 'time'
+        ? 'Time Attack'
+        : 'Endless';
+    button.type = 'button';
+    button.addEventListener('click', () => {
+      startGame(mode);
+    });
+    controls.appendChild(button);
+  }
+
+  container.appendChild(controls);
+
+  requestAnimationFrame((time) => {
+    loop(time);
+  });
+}
+
+const app = document.querySelector<HTMLDivElement>('#app');
+if (app) {
+  initGame(app);
+}
+
+export { EMOJIS, startGame };

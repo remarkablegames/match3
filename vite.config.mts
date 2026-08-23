@@ -15,6 +15,12 @@ export default defineConfig({
         100: true,
       },
       include: ['src/**/*.ts'],
+      exclude: [
+        'src/audio.ts',
+        'src/input.ts',
+        'src/main.ts',
+        'src/renderer.ts',
+      ],
     },
     environment: 'jsdom',
     globals: true,

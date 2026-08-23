@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "build": "tsc && vite build",
+    "check:size": "node scripts/check-size.mjs",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "lint:tsc": "tsc --noEmit",
     "prepare": "husky",
     "preview": "vite preview",
-    "start": "vite",
+    "start": "vite --open",
     "test": "vitest",
     "test:ci": "CI=true npm test -- --color --coverage",
     "test:watch": "vitest --watch"

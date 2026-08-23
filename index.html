@@ -2,33 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="logo.svg" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>Match 3</title>
-    <script
-      src="https://unpkg.com/github-corners/dist/embed.min.js"
-      data-href="https://github.com/remarkablegames/match3"
-      data-target="_blank"
-      async
-      defer
-    ></script>
+    <title>Match3</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌈%3C/text%3E%3C/svg%3E"
+    />
   </head>
   <body>
     <noscript>You need to enable JavaScript to play this game.</noscript>
     <div id="app"></div>
     <script type="module" src="src/main.ts"></script>
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=%VITE_GOOGLE_ANALYTICS_ID%"
-    ></script>
-    <script>
-      window['ga-disable-%VITE_GOOGLE_ANALYTICS_ID%'] = %DEV%;
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag('js', new Date());
-      gtag('config', '%VITE_GOOGLE_ANALYTICS_ID%');
-    </script>
   </body>
 </html>
