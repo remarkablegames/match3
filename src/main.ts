@@ -289,7 +289,7 @@ function initGame(container: HTMLElement): void {
   }
 
   attachInputHandlers(
-    state,
+    () => state,
     renderer.screenToGrid,
     (position) => {
       void handleTileSelection(position);

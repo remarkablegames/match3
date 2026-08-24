@@ -20,13 +20,14 @@ export type DirtyCallback = () => void;
  * Attaches mouse, touch, and keyboard handlers to the document.
  */
 export function attachInputHandlers(
-  state: GameState,
+  getState: () => GameState,
   convertScreenToGrid: (x: number, y: number) => Position | null,
   onSelectTile: SelectTileCallback,
   onRestart: RestartCallback,
   onDirty: DirtyCallback,
 ): () => void {
   function handlePointer(x: number, y: number): void {
+    const state = getState();
     if (state.gameOver) {
       onRestart();
       return;
@@ -48,6 +49,7 @@ export function attachInputHandlers(
   }
 
   function moveCursor(deltaRow: number, deltaCol: number): void {
+    const state = getState();
     state.cursor = {
       col: Math.max(0, Math.min(GRID_SIZE - 1, state.cursor.col + deltaCol)),
       row: Math.max(0, Math.min(GRID_SIZE - 1, state.cursor.row + deltaRow)),
@@ -56,6 +58,7 @@ export function attachInputHandlers(
   }
 
   function onKeyDown(event: KeyboardEvent): void {
+    const state = getState();
     switch (event.key) {
       case 'ArrowUp':
         moveCursor(-1, 0);

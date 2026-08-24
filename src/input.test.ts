@@ -1,0 +1,37 @@
+import { createGameState } from './game';
+import { attachInputHandlers } from './input';
+
+describe('attachInputHandlers', () => {
+  it('uses the latest state so a new game is not repeatedly restarted', () => {
+    let state = createGameState('levels');
+    state.gameOver = true;
+
+    const onSelectTile = vi.fn();
+    const onRestart = vi.fn(() => {
+      state = createGameState('levels');
+    });
+    const onDirty = vi.fn();
+
+    const cleanup = attachInputHandlers(
+      () => state,
+      () => ({ row: 0, col: 0 }),
+      onSelectTile,
+      onRestart,
+      onDirty,
+    );
+
+    document.dispatchEvent(
+      new MouseEvent('mousedown', { clientX: 10, clientY: 10 }),
+    );
+    expect(onRestart).toHaveBeenCalledTimes(1);
+    expect(onSelectTile).not.toHaveBeenCalled();
+
+    document.dispatchEvent(
+      new MouseEvent('mousedown', { clientX: 10, clientY: 10 }),
+    );
+    expect(onRestart).toHaveBeenCalledTimes(1);
+    expect(onSelectTile).toHaveBeenCalledTimes(1);
+
+    cleanup();
+  });
+});
