@@ -38,6 +38,8 @@ let state: GameState = createGameState('levels');
 let renderer: Renderer;
 let visuals: VisualTile[][] = createVisuals(GRID_SIZE);
 let particles: Particle[] = [];
+let needsRender = true;
+let lastDisplayedTimeLeft: number | null = null;
 
 /**
  * Spawns a small burst of rainbow particles at the given screen position.
@@ -69,7 +71,8 @@ function lerp(current: number, target: number, factor: number): number {
 /**
  * Updates visual interpolation and particle simulation each frame.
  */
-function updateAnimations(deltaTime: number): void {
+function updateAnimations(deltaTime: number): boolean {
+  let active = false;
   for (let row = 0; row < GRID_SIZE; row += 1) {
     for (let col = 0; col < GRID_SIZE; col += 1) {
       const v = visuals[row][col];
@@ -77,6 +80,14 @@ function updateAnimations(deltaTime: number): void {
       v.offsetY = lerp(v.offsetY, 0, ANIMATION_SPEED);
       v.scale = lerp(v.scale, 1, ANIMATION_SPEED);
       v.opacity = lerp(v.opacity, 1, ANIMATION_SPEED);
+      if (
+        Math.abs(v.offsetX) > 0.01 ||
+        Math.abs(v.offsetY) > 0.01 ||
+        Math.abs(v.scale - 1) > 0.001 ||
+        Math.abs(v.opacity - 1) > 0.001
+      ) {
+        active = true;
+      }
     }
   }
 
@@ -87,6 +98,8 @@ function updateAnimations(deltaTime: number): void {
     particle.life -= deltaTime;
     return particle.life > 0;
   });
+
+  return active || particles.length > 0;
 }
 
 /**
@@ -100,6 +113,7 @@ function processMatchesSequence(): Promise<void> {
       if (matches.length === 0) {
         state.busy = false;
         checkEndConditions(state);
+        needsRender = true;
         if (state.gameOver && state.won) {
           playWin();
         } else if (state.gameOver && !state.won) {
@@ -125,6 +139,7 @@ function processMatchesSequence(): Promise<void> {
 
       const { score } = clearMatches(state.grid, matches);
       state.score += score;
+      needsRender = true;
 
       // Shrink removed tiles visually.
       for (const position of matches) {
@@ -163,18 +178,21 @@ async function handleTileSelection(position: Position): Promise<void> {
   if (!state.selected) {
     state.selected = position;
     playSelect();
+    needsRender = true;
     return;
   }
 
   const selected = state.selected;
   if (selected.row === position.row && selected.col === position.col) {
     state.selected = null;
+    needsRender = true;
     return;
   }
 
   if (!areAdjacent(selected, position)) {
     state.selected = position;
     playSelect();
+    needsRender = true;
     return;
   }
 
@@ -232,6 +250,8 @@ function startGame(mode: GameMode): void {
   state = createGameState(mode);
   visuals = createVisuals(GRID_SIZE);
   particles = [];
+  needsRender = true;
+  lastDisplayedTimeLeft = null;
 }
 
 /**
@@ -241,8 +261,15 @@ function loop(lastTime: number): void {
   requestAnimationFrame((time) => {
     const deltaTime = Math.min((time - lastTime) / 1000, 0.1);
     updateTimer(state, deltaTime);
-    updateAnimations(deltaTime);
-    renderer.render(state, visuals, particles);
+    const animationsActive = updateAnimations(deltaTime);
+    const displayedTimeLeft =
+      state.timeLeft !== null ? Math.ceil(state.timeLeft) : null;
+    const timerTicked = displayedTimeLeft !== lastDisplayedTimeLeft;
+    if (needsRender || animationsActive || timerTicked) {
+      renderer.render(state, visuals, particles);
+      needsRender = false;
+      lastDisplayedTimeLeft = displayedTimeLeft;
+    }
     loop(time);
   });
 }
@@ -251,18 +278,27 @@ function loop(lastTime: number): void {
  * Initializes the game and mounts it into the provided element.
  */
 function initGame(container: HTMLElement): void {
-  renderer = createRenderer(container);
+  renderer = createRenderer(container, () => {
+    needsRender = true;
+  });
   visuals = createVisuals(GRID_SIZE);
+
+  function markDirty(): void {
+    needsRender = true;
+  }
 
   attachInputHandlers(
     state,
     renderer.screenToGrid,
     (position) => {
       void handleTileSelection(position);
+      markDirty();
     },
     () => {
       startGame(state.mode);
+      markDirty();
     },
+    markDirty,
   );
 
   // Add simple mode buttons.

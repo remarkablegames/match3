@@ -57,7 +57,10 @@ export function createVisuals(size: number): VisualTile[][] {
 /**
  * Initializes the canvas, sizes it to the container, and returns render helpers.
  */
-export function createRenderer(container: HTMLElement): Renderer {
+export function createRenderer(
+  container: HTMLElement,
+  onResize?: () => void,
+): Renderer {
   const canvas = document.createElement('canvas');
   canvas.id = 'game-canvas';
   container.appendChild(canvas);
@@ -83,7 +86,7 @@ export function createRenderer(container: HTMLElement): Renderer {
 
   function resize(): void {
     const rect = container.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     canvas.width = Math.floor(rect.width * dpr);
     canvas.height = Math.floor(rect.height * dpr);
@@ -102,6 +105,7 @@ export function createRenderer(container: HTMLElement): Renderer {
     renderer.tileSize = tileSize;
     renderer.boardX = boardX;
     renderer.boardY = boardY;
+    onResize?.();
   }
 
   resize();

@@ -12,6 +12,11 @@ export type SelectTileCallback = (position: Position) => void;
 export type RestartCallback = () => void;
 
 /**
+ * Callback invoked whenever any input changes and the renderer should redraw.
+ */
+export type DirtyCallback = () => void;
+
+/**
  * Attaches mouse, touch, and keyboard handlers to the document.
  */
 export function attachInputHandlers(
@@ -19,6 +24,7 @@ export function attachInputHandlers(
   convertScreenToGrid: (x: number, y: number) => Position | null,
   onSelectTile: SelectTileCallback,
   onRestart: RestartCallback,
+  onDirty: DirtyCallback,
 ): () => void {
   function handlePointer(x: number, y: number): void {
     if (state.gameOver) {
@@ -46,6 +52,7 @@ export function attachInputHandlers(
       col: Math.max(0, Math.min(GRID_SIZE - 1, state.cursor.col + deltaCol)),
       row: Math.max(0, Math.min(GRID_SIZE - 1, state.cursor.row + deltaRow)),
     };
+    onDirty();
   }
 
   function onKeyDown(event: KeyboardEvent): void {
@@ -73,6 +80,7 @@ export function attachInputHandlers(
       }
       case 'Escape':
         state.selected = null;
+        onDirty();
         break;
       default:
         return;
