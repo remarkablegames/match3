@@ -17,6 +17,21 @@ export const BASE_MATCH_SCORE = 10;
 /** Multiplier applied for each additional tile beyond 3. */
 export const COMBO_MULTIPLIER = 1.5;
 
+/** Base target score for level mode. */
+export const BASE_LEVEL_TARGET_SCORE = 1000;
+
+/** Target score increase per level. */
+export const LEVEL_TARGET_INCREMENT = 500;
+
+/** Starting move limit for level mode. */
+export const BASE_LEVEL_MOVES = 20;
+
+/** Moves removed per level. */
+export const LEVEL_MOVE_DECREMENT = 1;
+
+/** Minimum move limit for level mode. */
+export const MIN_LEVEL_MOVES = 10;
+
 /** Current mode configuration. */
 export interface ModeConfig {
   /** Time limit in seconds, or null for no timer. */

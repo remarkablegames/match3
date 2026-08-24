@@ -1,8 +1,13 @@
 import {
+  BASE_LEVEL_MOVES,
+  BASE_LEVEL_TARGET_SCORE,
   BASE_MATCH_SCORE,
   COMBO_MULTIPLIER,
   type GameMode,
   GRID_SIZE,
+  LEVEL_MOVE_DECREMENT,
+  LEVEL_TARGET_INCREMENT,
+  MIN_LEVEL_MOVES,
   MODES,
   TILE_TYPES,
 } from './constants';
@@ -272,20 +277,57 @@ export function createPlayableGrid(rows: number, cols: number): TileType[][] {
 }
 
 /**
+ * Returns the target score for a given level in level mode.
+ */
+export function getLevelTargetScore(level: number): number {
+  return BASE_LEVEL_TARGET_SCORE + (level - 1) * LEVEL_TARGET_INCREMENT;
+}
+
+/**
+ * Returns the move limit for a given level in level mode.
+ */
+export function getLevelMoveLimit(level: number): number {
+  return Math.max(
+    MIN_LEVEL_MOVES,
+    BASE_LEVEL_MOVES - (level - 1) * LEVEL_MOVE_DECREMENT,
+  );
+}
+
+/**
+ * Advances to the next level in level mode, resetting the board, score,
+ * moves, and target.
+ */
+export function advanceLevel(state: GameState): void {
+  if (state.mode !== 'levels') {
+    return;
+  }
+  state.level += 1;
+  state.score = 0;
+  state.movesLeft = getLevelMoveLimit(state.level);
+  state.targetScore = getLevelTargetScore(state.level);
+  state.won = false;
+  state.gameOver = false;
+  state.grid = createPlayableGrid(GRID_SIZE, GRID_SIZE);
+}
+
+/**
  * Creates the initial game state for the given mode.
  */
 export function createGameState(mode: GameMode): GameState {
   const config = MODES[mode];
+  const level = mode === 'levels' ? 1 : null;
   return {
     busy: false,
     cursor: { col: Math.floor(GRID_SIZE / 2), row: Math.floor(GRID_SIZE / 2) },
     gameOver: false,
     grid: createPlayableGrid(GRID_SIZE, GRID_SIZE),
+    level: level ?? 1,
     mode,
-    movesLeft: config.moveLimit,
+    movesLeft: mode === 'levels' ? getLevelMoveLimit(1) : config.moveLimit,
     score: 0,
     selected: null,
-    targetScore: config.targetScore,
+    targetScore:
+      mode === 'levels' ? getLevelTargetScore(1) : config.targetScore,
     timeLeft: config.timeLimit,
     won: false,
   };
@@ -313,13 +355,17 @@ export function checkEndConditions(state: GameState): void {
     return;
   }
   if (state.targetScore !== null && state.score >= state.targetScore) {
-    state.gameOver = true;
-    state.won = true;
+    if (state.mode === 'levels') {
+      state.won = true;
+    } else {
+      state.gameOver = true;
+      state.won = true;
+    }
     return;
   }
   if (state.movesLeft !== null && state.movesLeft <= 0) {
     state.gameOver = true;
-    state.won = state.targetScore !== null && state.score >= state.targetScore;
+    state.won = false;
   }
 }
 

@@ -213,7 +213,11 @@ export function createRenderer(
       'bold 18px "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", sans-serif';
     ctx.textBaseline = 'middle';
 
-    const parts: string[] = [`Score: ${String(state.score)}`];
+    const parts: string[] = [];
+    if (state.mode === 'levels') {
+      parts.push(`Level: ${String(state.level)}`);
+    }
+    parts.push(`Score: ${String(state.score)}`);
     if (state.movesLeft !== null) {
       parts.push(`Moves: ${String(state.movesLeft)}`);
     }

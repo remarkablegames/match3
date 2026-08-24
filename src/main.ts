@@ -10,6 +10,7 @@ import {
 } from './audio';
 import { EMOJIS, type GameMode, GRID_SIZE } from './constants';
 import {
+  advanceLevel,
   applyGravity,
   areAdjacent,
   checkEndConditions,
@@ -112,6 +113,15 @@ function processMatchesSequence(): Promise<void> {
       if (matches.length === 0) {
         state.busy = false;
         checkEndConditions(state);
+
+        if (state.won && state.mode === 'levels') {
+          advanceLevel(state);
+          visuals = createVisuals(GRID_SIZE);
+          needsRender = true;
+          resolve();
+          return;
+        }
+
         needsRender = true;
         if (state.gameOver && state.won) {
           playWin();

@@ -94,6 +94,8 @@ export interface GameState {
   selected: Position | null;
   /** Current score. */
   score: number;
+  /** Current level in level mode. */
+  level: number;
   /** Current game mode. */
   mode: GameMode;
   /** Remaining moves in level mode. */

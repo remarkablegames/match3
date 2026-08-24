@@ -1,4 +1,5 @@
 import {
+  advanceLevel,
   applyGravity,
   areAdjacent,
   checkEndConditions,
@@ -7,6 +8,8 @@ import {
   createGameState,
   createGrid,
   findMatches,
+  getLevelMoveLimit,
+  getLevelTargetScore,
   hasValidMoves,
   swapTiles,
   updateTimer,
@@ -233,6 +236,7 @@ describe('createGameState', () => {
   it('creates a state for level mode', () => {
     const state = createGameState('levels');
     expect(state.mode).toBe('levels');
+    expect(state.level).toBe(1);
     expect(state.movesLeft).toBe(20);
     expect(state.targetScore).toBe(1000);
     expect(state.timeLeft).toBeNull();
@@ -285,8 +289,17 @@ describe('updateTimer', () => {
 });
 
 describe('checkEndConditions', () => {
-  it('marks the game as won when target score is reached', () => {
+  it('signals level completion in level mode when target score is reached', () => {
     const state = createGameState('levels');
+    state.score = 1500;
+    checkEndConditions(state);
+    expect(state.gameOver).toBe(false);
+    expect(state.won).toBe(true);
+  });
+
+  it('ends the game in time mode when target score is reached', () => {
+    const state = createGameState('time');
+    state.targetScore = 1000;
     state.score = 1500;
     checkEndConditions(state);
     expect(state.gameOver).toBe(true);
@@ -315,6 +328,43 @@ describe('checkEndConditions', () => {
     state.score = 100;
     checkEndConditions(state);
     expect(state.gameOver).toBe(false);
+  });
+});
+
+describe('getLevelTargetScore', () => {
+  it('increases the target by a fixed increment per level', () => {
+    expect(getLevelTargetScore(1)).toBe(1000);
+    expect(getLevelTargetScore(2)).toBe(1500);
+    expect(getLevelTargetScore(3)).toBe(2000);
+  });
+});
+
+describe('getLevelMoveLimit', () => {
+  it('decreases moves per level down to a minimum', () => {
+    expect(getLevelMoveLimit(1)).toBe(20);
+    expect(getLevelMoveLimit(2)).toBe(19);
+    expect(getLevelMoveLimit(11)).toBe(10);
+  });
+});
+
+describe('advanceLevel', () => {
+  it('resets the board, score, moves, and target for the next level', () => {
+    const state = createGameState('levels');
+    state.score = 1000;
+    advanceLevel(state);
+    expect(state.level).toBe(2);
+    expect(state.score).toBe(0);
+    expect(state.movesLeft).toBe(19);
+    expect(state.targetScore).toBe(1500);
+    expect(state.won).toBe(false);
+    expect(state.gameOver).toBe(false);
+  });
+
+  it('does nothing outside of level mode', () => {
+    const state = createGameState('time');
+    state.level = 5;
+    advanceLevel(state);
+    expect(state.level).toBe(5);
   });
 });
 
