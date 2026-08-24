@@ -200,6 +200,9 @@ async function handleTileSelection(position: Position): Promise<void> {
   state.selected = null;
   playSwap();
 
+  // Apply the logical swap first so the emojis move to their new positions.
+  swapTiles(state.grid, selected, position);
+
   // Animate swap offsets.
   const dx = (position.col - selected.col) * renderer.tileSize;
   const dy = (position.row - selected.row) * renderer.tileSize;
@@ -215,17 +218,15 @@ async function handleTileSelection(position: Position): Promise<void> {
     setTimeout(resolve, MATCH_DELAY);
   });
 
-  swapTiles(state.grid, selected, position);
-
   const matches = findMatches(state.grid);
   if (matches.length === 0) {
     // Invalid swap: swap back.
     playInvalid();
     swapTiles(state.grid, selected, position);
-    v1.offsetX = -dx;
-    v1.offsetY = -dy;
-    v2.offsetX = dx;
-    v2.offsetY = dy;
+    v1.offsetX = dx;
+    v1.offsetY = dy;
+    v2.offsetX = -dx;
+    v2.offsetY = -dy;
     await new Promise((resolve) => {
       setTimeout(resolve, MATCH_DELAY);
     });
