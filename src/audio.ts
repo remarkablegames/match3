@@ -7,6 +7,11 @@
 let audioContext: AudioContext | null = null;
 
 /**
+ * Multiplier applied to every sound's volume. Increase this to make all sounds louder.
+ */
+const MASTER_VOLUME = 5;
+
+/**
  * Lazily creates and resumes the shared AudioContext.
  */
 function getAudioContext(): AudioContext | null {
@@ -44,7 +49,7 @@ function playTone(
     context.currentTime + duration,
   );
 
-  gain.gain.setValueAtTime(volume, context.currentTime);
+  gain.gain.setValueAtTime(volume * MASTER_VOLUME, context.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + duration);
 
   oscillator.connect(gain);
