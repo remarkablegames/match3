@@ -1,4 +1,4 @@
-import { EMOJIS, type GameMode, GRID_SIZE } from './constants';
+import { EMOJIS, GRID_SIZE } from './constants';
 import type { GameState, Particle } from './types';
 
 /**
@@ -318,15 +318,4 @@ export function createRenderer(
   renderer.screenToGrid = screenToGrid;
 
   return renderer;
-}
-
-/**
- * Formats a mode label for display.
- */
-export function formatMode(mode: GameMode): string {
-  return mode === 'levels'
-    ? 'Levels'
-    : mode === 'time'
-    ? 'Time Attack'
-    : 'Endless';
 }
