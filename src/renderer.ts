@@ -247,6 +247,7 @@ export function createRenderer(
       ctx.fillStyle = state.won ? '#4caf50' : '#f44336';
       ctx.font =
         'bold 42px "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", sans-serif';
+      ctx.textAlign = 'center';
       ctx.fillText(
         state.won ? 'You Win!' : 'Game Over',
         width / 2,
