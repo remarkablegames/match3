@@ -110,6 +110,10 @@ export function createRenderer(
 
   resize();
 
+  function getTileEmoji(value: number): string {
+    return EMOJIS[value] ?? '?';
+  }
+
   function drawBackground(): void {
     const { height, width } = canvas.getBoundingClientRect();
     const gradient = ctx.createLinearGradient(0, 0, width, height);
@@ -185,7 +189,7 @@ export function createRenderer(
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#333';
-    ctx.fillText(EMOJIS[value] ?? '?', 0, 2);
+    ctx.fillText(getTileEmoji(value), 0, 2);
 
     ctx.restore();
   }

@@ -139,6 +139,18 @@ describe('applyGravity', () => {
     expect(grid[1][0]).not.toBe(-1);
     expect(grid[0][0]).not.toBe(-1);
   });
+
+  it('returns movements for falling and newly spawned tiles', () => {
+    const grid = [
+      [0, 1],
+      [-1, 2],
+      [-1, 3],
+    ];
+    const movements = applyGravity(grid);
+    expect(movements.length).toBeGreaterThan(0);
+    expect(movements.some((m) => m.isNew)).toBe(true);
+    expect(movements.some((m) => !m.isNew)).toBe(true);
+  });
 });
 
 describe('swapTiles', () => {
@@ -156,22 +168,22 @@ describe('swapTiles', () => {
 describe('wouldCreateMatch', () => {
   it('detects a horizontal match created by a swap', () => {
     const grid = [
+      [2, 0, 2],
       [0, 1, 0],
-      [0, 1, 2],
-      [2, 3, 4],
+      [3, 4, 5],
     ];
-    expect(wouldCreateMatch(grid, { col: 0, row: 1 }, { col: 0, row: 2 })).toBe(
+    expect(wouldCreateMatch(grid, { col: 1, row: 0 }, { col: 1, row: 1 })).toBe(
       true,
     );
   });
 
   it('detects a vertical match created by a swap', () => {
     const grid = [
-      [0, 1, 2],
-      [1, 1, 2],
-      [2, 3, 4],
+      [0, 2, 3],
+      [4, 0, 5],
+      [0, 6, 7],
     ];
-    expect(wouldCreateMatch(grid, { col: 2, row: 0 }, { col: 2, row: 2 })).toBe(
+    expect(wouldCreateMatch(grid, { col: 0, row: 1 }, { col: 1, row: 1 })).toBe(
       true,
     );
   });
@@ -191,18 +203,18 @@ describe('wouldCreateMatch', () => {
 describe('hasValidMoves', () => {
   it('returns true when a horizontal valid move exists', () => {
     const grid = [
+      [2, 0, 2],
       [0, 1, 0],
-      [0, 1, 2],
-      [2, 3, 4],
+      [3, 4, 5],
     ];
     expect(hasValidMoves(grid)).toBe(true);
   });
 
   it('returns true when a vertical valid move exists', () => {
     const grid = [
-      [0, 1, 2],
-      [3, 1, 4],
-      [5, 6, 7],
+      [0, 2, 3],
+      [4, 0, 5],
+      [0, 6, 7],
     ];
     expect(hasValidMoves(grid)).toBe(true);
   });
@@ -317,5 +329,22 @@ describe('useMove', () => {
     const state = createGameState('endless');
     useMove(state);
     expect(state.movesLeft).toBeNull();
+  });
+});
+
+describe('clearMatches', () => {
+  it('applies a cascade combo multiplier', () => {
+    const grid = [
+      [0, 0, 0, 1],
+      [2, 3, 4, 5],
+    ];
+    const matches = findMatches(grid);
+    const base = clearMatches(grid, matches);
+    const grid2 = [
+      [0, 0, 0, 1],
+      [2, 3, 4, 5],
+    ];
+    const combo = clearMatches(grid2, findMatches(grid2), 2);
+    expect(combo.score).toBe(base.score * 2);
   });
 });

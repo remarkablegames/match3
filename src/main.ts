@@ -103,8 +103,7 @@ function updateAnimations(deltaTime: number): boolean {
 }
 
 /**
- * Schedules match clearing and gravity with a short delay so the player can see
- * the matched tiles.
+ * Schedules match clearing, gravity, and fall animations with a short delay so the player can see each cascade.
  */
 function processMatchesSequence(): Promise<void> {
   return new Promise((resolve) => {
@@ -137,7 +136,7 @@ function processMatchesSequence(): Promise<void> {
         renderer.tileSize / 2;
       spawnParticles(centerX, centerY, Math.min(matches.length, 12));
 
-      const { score } = clearMatches(state.grid, matches);
+      const { score } = clearMatches(state.grid, matches, combo);
       state.score += score;
       needsRender = true;
 
@@ -149,16 +148,34 @@ function processMatchesSequence(): Promise<void> {
       }
 
       setTimeout(() => {
-        applyGravity(state.grid);
-        // Reset visuals for new tiles so they fade in.
+        const movements = applyGravity(state.grid);
+        const movedPositions = new Set<string>();
+
+        for (const movement of movements) {
+          const v = visuals[movement.to.row][movement.to.col];
+          v.offsetX = (movement.fromCol - movement.to.col) * renderer.tileSize;
+          v.offsetY = (movement.fromRow - movement.to.row) * renderer.tileSize;
+          v.scale = 1;
+          v.opacity = movement.isNew ? 0 : 1;
+          movedPositions.add(
+            `${String(movement.to.row)},${String(movement.to.col)}`,
+          );
+        }
+
+        // Ensure any newly spawned tile that did not move is visible.
         for (let row = 0; row < GRID_SIZE; row += 1) {
           for (let col = 0; col < GRID_SIZE; col += 1) {
-            if (visuals[row][col].opacity === 0.1) {
+            if (
+              state.grid[row][col] !== -1 &&
+              visuals[row][col].opacity === 0.1 &&
+              !movedPositions.has(`${String(row)},${String(col)}`)
+            ) {
               visuals[row][col].scale = 1;
-              visuals[row][col].opacity = 0;
+              visuals[row][col].opacity = 1;
             }
           }
         }
+
         step(combo + 1);
       }, MATCH_DELAY);
     }

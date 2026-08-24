@@ -6,7 +6,13 @@ import {
   MODES,
   TILE_TYPES,
 } from './constants';
-import type { GameState, MatchResult, Position, TileType } from './types';
+import type {
+  GameState,
+  MatchResult,
+  Position,
+  TileMovement,
+  TileType,
+} from './types';
 
 /**
  * Creates an empty grid of the given size.
@@ -75,20 +81,21 @@ export function findMatches(
   const cols = grid[0]?.length ?? 0;
   const matched = new Set<string>();
 
+  function addPosition(row: number, col: number): void {
+    matched.add(`${String(row)},${String(col)}`);
+  }
+
   // Horizontal matches.
   for (let row = 0; row < rows; row += 1) {
     let runStart = 0;
     for (let col = 1; col <= cols; col += 1) {
-      if (
-        col < cols &&
-        grid[row][col] === grid[row][runStart] &&
-        grid[row][col] !== -1
-      ) {
+      const current = col < cols ? grid[row][col] : null;
+      if (current !== null && current === grid[row][runStart] && current >= 0) {
         continue;
       }
       if (col - runStart >= 3) {
         for (let k = runStart; k < col; k += 1) {
-          matched.add(`${String(row)},${String(k)}`);
+          addPosition(row, k);
         }
       }
       runStart = col;
@@ -99,16 +106,13 @@ export function findMatches(
   for (let col = 0; col < cols; col += 1) {
     let runStart = 0;
     for (let row = 1; row <= rows; row += 1) {
-      if (
-        row < rows &&
-        grid[row][col] === grid[runStart][col] &&
-        grid[row][col] !== -1
-      ) {
+      const current = row < rows ? grid[row][col] : null;
+      if (current !== null && current === grid[runStart][col] && current >= 0) {
         continue;
       }
       if (row - runStart >= 3) {
         for (let k = runStart; k < row; k += 1) {
-          matched.add(`${String(k)},${String(col)}`);
+          addPosition(k, col);
         }
       }
       runStart = row;
@@ -128,6 +132,7 @@ export function findMatches(
 export function clearMatches(
   grid: TileType[][],
   matches: readonly Position[],
+  combo = 1,
 ): MatchResult {
   const matchedPositions: Position[] = [];
 
@@ -144,34 +149,51 @@ export function clearMatches(
   if (count > 3) {
     score = Math.floor(score * (1 + (count - 3) * COMBO_MULTIPLIER));
   }
+  score = Math.floor(score * combo);
 
   return { matchedPositions, score };
 }
 
 /**
  * Applies gravity so tiles fall down into empty spaces and refills the top
- * rows with new random tiles.
+ * rows with new random tiles. Returns the movements so they can be animated.
  */
-export function applyGravity(grid: TileType[][]): void {
+export function applyGravity(grid: TileType[][]): TileMovement[] {
   const rows = grid.length;
   /* v8 ignore next */
   const cols = grid[0]?.length ?? 0;
+  const movements: TileMovement[] = [];
 
   for (let col = 0; col < cols; col += 1) {
     let writeRow = rows - 1;
     for (let row = rows - 1; row >= 0; row -= 1) {
-      if (grid[row][col] !== -1) {
-        grid[writeRow][col] = grid[row][col];
+      const value = grid[row][col];
+      if (value !== -1) {
+        grid[writeRow][col] = value;
         if (writeRow !== row) {
           grid[row][col] = -1;
+          movements.push({
+            fromCol: col,
+            fromRow: row,
+            isNew: false,
+            to: { col, row: writeRow },
+          });
         }
         writeRow -= 1;
       }
     }
     for (let row = writeRow; row >= 0; row -= 1) {
       grid[row][col] = randomTileType();
+      movements.push({
+        fromCol: col,
+        fromRow: -1,
+        isNew: true,
+        to: { col, row },
+      });
     }
   }
+
+  return movements;
 }
 
 /**
@@ -184,49 +206,27 @@ export function swapTiles(grid: TileType[][], a: Position, b: Position): void {
 }
 
 /**
- * Checks whether swapping two tiles would create at least one match.
+ * Checks whether swapping two tiles would create at least one match involving
+ * one of the swapped positions.
  */
 export function wouldCreateMatch(
   grid: readonly (readonly TileType[])[],
   a: Position,
   b: Position,
 ): boolean {
-  const valueA = grid[a.row][a.col];
-  const valueB = grid[b.row][b.col];
   const rows = grid.length;
   /* v8 ignore next */
   const cols = grid[0]?.length ?? 0;
-
-  // Temporarily pretend the swap happened by checking around b for valueA.
-  const check = (row: number, col: number, value: TileType): boolean => {
-    const horizontal =
-      (col >= 2 &&
-        grid[row][col - 1] === value &&
-        grid[row][col - 2] === value) ||
-      (col + 2 < cols &&
-        grid[row][col + 1] === value &&
-        grid[row][col + 2] === value) ||
-      (col >= 1 &&
-        col + 1 < cols &&
-        grid[row][col - 1] === value &&
-        grid[row][col + 1] === value);
-
-    const vertical =
-      (row >= 2 &&
-        grid[row - 1][col] === value &&
-        grid[row - 2][col] === value) ||
-      (row + 2 < rows &&
-        grid[row + 1][col] === value &&
-        grid[row + 2][col] === value) ||
-      (row >= 1 &&
-        row + 1 < rows &&
-        grid[row - 1][col] === value &&
-        grid[row + 1][col] === value);
-
-    return horizontal || vertical;
-  };
-
-  return check(b.row, b.col, valueA) || check(a.row, a.col, valueB);
+  const hypothetical: TileType[][] = Array.from({ length: rows }, (_, row) =>
+    Array.from({ length: cols }, (_, col) => grid[row][col]),
+  );
+  swapTiles(hypothetical, a, b);
+  const matches = findMatches(hypothetical);
+  return matches.some(
+    (position) =>
+      (position.row === a.row && position.col === a.col) ||
+      (position.row === b.row && position.col === b.col),
+  );
 }
 
 /**

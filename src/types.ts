@@ -15,6 +15,20 @@ export interface Position {
 }
 
 /**
+ * Describes a single tile movement produced by gravity.
+ */
+export interface TileMovement {
+  /** Target grid position. */
+  readonly to: Position;
+  /** Source row before gravity; -1 means the tile was spawned above the board. */
+  readonly fromRow: number;
+  /** Source column before gravity. */
+  readonly fromCol: number;
+  /** Whether this tile was newly spawned at the top. */
+  readonly isNew: boolean;
+}
+
+/**
  * Describes the result of processing matches in a single step.
  */
 export interface MatchResult {
