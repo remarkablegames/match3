@@ -38,7 +38,7 @@ export interface Renderer {
 }
 
 const PADDING = 8;
-const UI_HEIGHT = 80;
+const UI_HEIGHT = 48;
 
 /**
  * Creates a fresh visual state matching the logical grid size.
@@ -207,24 +207,39 @@ export function createRenderer(
     ctx.save();
     ctx.font =
       'bold 18px "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#6a4c93';
+    ctx.textBaseline = 'middle';
 
-    const lines: string[] = [`Score: ${String(state.score)}`];
+    const parts: string[] = [`Score: ${String(state.score)}`];
     if (state.movesLeft !== null) {
-      lines.push(`Moves: ${String(state.movesLeft)}`);
+      parts.push(`Moves: ${String(state.movesLeft)}`);
     }
     if (state.timeLeft !== null) {
-      lines.push(`Time: ${String(Math.ceil(state.timeLeft))}`);
+      parts.push(`Time: ${String(Math.ceil(state.timeLeft))}`);
     }
     if (state.targetScore !== null) {
-      lines.push(`Target: ${String(state.targetScore)}`);
+      parts.push(`Target: ${String(state.targetScore)}`);
     }
 
-    const top = 16;
-    lines.forEach((line, index) => {
-      ctx.fillText(line, width / 2, top + index * 24);
-    });
+    const separator = ' | ';
+    const partWidths = parts.map((part) => ctx.measureText(part).width);
+    const separatorWidth = ctx.measureText(separator).width;
+    const totalWidth =
+      partWidths.reduce((sum, w) => sum + w, 0) +
+      (parts.length - 1) * separatorWidth;
+    let x = (width - totalWidth) / 2;
+    const centerY = UI_HEIGHT / 2;
+
+    for (let index = 0; index < parts.length; index += 1) {
+      ctx.fillStyle = '#6a4c93';
+      ctx.textAlign = 'left';
+      ctx.fillText(parts[index], x, centerY);
+      x += partWidths[index];
+      if (index < parts.length - 1) {
+        ctx.fillStyle = 'rgba(106, 76, 147, 0.4)';
+        ctx.fillText(separator, x, centerY);
+        x += separatorWidth;
+      }
+    }
 
     if (state.gameOver) {
       ctx.fillStyle = 'rgba(255,255,255,0.85)';
