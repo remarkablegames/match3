@@ -113,5 +113,5 @@ export function playWin(): void {
  * Plays a descending tone for game over.
  */
 export function playLose(): void {
-  playTone(300, 100, 0.4, 'sawtooth', 0.08);
+  playTone(300, 100, 0.4, 'sawtooth', 0.05);
 }
