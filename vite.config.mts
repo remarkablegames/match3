@@ -9,6 +9,12 @@ export default defineConfig({
     },
   },
 
+  server: {
+    watch: {
+      ignored: ['coverage/**'],
+    },
+  },
+
   test: {
     coverage: {
       thresholds: {
