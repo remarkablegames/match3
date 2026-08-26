@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/remarkablegames/match3/compare/v1.0.0...v1.0.1) (2026-08-26)
+
+
+### Bug Fixes
+
+* **vite:** set base to relative path ([2a3a97e](https://github.com/remarkablegames/match3/commit/2a3a97e644c0a14afc49f8b38207a595f44d176e))
+
 ## 1.0.0 (2026-08-26)
 
 
