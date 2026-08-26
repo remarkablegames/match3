@@ -47,6 +47,9 @@ export function attachInputHandlers(
   }
 
   function onTouchStart(event: TouchEvent): void {
+    if (event.target instanceof HTMLElement && event.target.closest('button')) {
+      return;
+    }
     event.preventDefault();
     const touch = event.touches[0];
     handlePointer(touch.clientX, touch.clientY);
