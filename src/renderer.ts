@@ -266,24 +266,36 @@ export function createRenderer(
     }
 
     if (state.gameOver) {
+      const { height } = canvas.getBoundingClientRect();
+      const centerY = height / 2;
       ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.fillRect(0, 0, width, canvas.getBoundingClientRect().height);
+      ctx.fillRect(0, 0, width, height);
+      ctx.textAlign = 'center';
+
+      const title = state.won
+        ? 'You Win!'
+        : state.mode === 'time'
+        ? "Time's Up!"
+        : state.mode === 'levels'
+        ? 'Out of Moves!'
+        : 'Game Over';
       ctx.fillStyle = state.won ? '#4caf50' : '#f44336';
       ctx.font =
         'bold 42px "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(
-        state.won ? 'You Win!' : 'Game Over',
-        width / 2,
-        canvas.getBoundingClientRect().height / 2 - 24,
-      );
+      ctx.fillText(title, width / 2, centerY - 48);
+
+      ctx.font =
+        'bold 24px "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", sans-serif';
+      ctx.fillStyle = '#6a4c93';
+      ctx.fillText(`Score: ${String(state.score)}`, width / 2, centerY);
+
       ctx.font =
         '20px "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", sans-serif';
       ctx.fillStyle = '#333';
       ctx.fillText(
         'Press Enter or click to play again',
         width / 2,
-        canvas.getBoundingClientRect().height / 2 + 24,
+        centerY + 44,
       );
     }
 
