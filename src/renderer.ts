@@ -39,6 +39,7 @@ export interface Renderer {
 
 const PADDING = 8;
 const UI_HEIGHT = 48;
+const HEADER_MARGIN_TOP = 6;
 
 /**
  * Creates a fresh visual state matching the logical grid size.
@@ -208,6 +209,7 @@ export function createRenderer(
 
   function drawUi(state: GameState): void {
     const { width } = canvas.getBoundingClientRect();
+    const isMobile = width < 480;
     ctx.save();
     ctx.font =
       'bold 18px "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", sans-serif';
@@ -229,24 +231,38 @@ export function createRenderer(
     }
 
     const separator = ' | ';
-    const partWidths = parts.map((part) => ctx.measureText(part).width);
-    const separatorWidth = ctx.measureText(separator).width;
-    const totalWidth =
-      partWidths.reduce((sum, w) => sum + w, 0) +
-      (parts.length - 1) * separatorWidth;
-    let x = (width - totalWidth) / 2;
-    const centerY = UI_HEIGHT / 2;
 
-    for (let index = 0; index < parts.length; index += 1) {
-      ctx.fillStyle = '#6a4c93';
-      ctx.textAlign = 'left';
-      ctx.fillText(parts[index], x, centerY);
-      x += partWidths[index];
-      if (index < parts.length - 1) {
-        ctx.fillStyle = 'rgba(106, 76, 147, 0.4)';
-        ctx.fillText(separator, x, centerY);
-        x += separatorWidth;
+    function drawLine(lineParts: string[], y: number): void {
+      const linePartWidths = lineParts.map(
+        (part) => ctx.measureText(part).width,
+      );
+      const separatorWidth = ctx.measureText(separator).width;
+      const totalWidth =
+        linePartWidths.reduce((sum, w) => sum + w, 0) +
+        (lineParts.length - 1) * separatorWidth;
+      let x = (width - totalWidth) / 2;
+
+      for (let index = 0; index < lineParts.length; index += 1) {
+        ctx.fillStyle = '#6a4c93';
+        ctx.textAlign = 'left';
+        ctx.fillText(lineParts[index], x, y);
+        x += linePartWidths[index];
+        if (index < lineParts.length - 1) {
+          ctx.fillStyle = 'rgba(106, 76, 147, 0.4)';
+          ctx.fillText(separator, x, y);
+          x += separatorWidth;
+        }
       }
+    }
+
+    if (isMobile && parts.length > 2) {
+      const mid = Math.ceil(parts.length / 2);
+      const lineDistance = 26;
+      const firstY = (UI_HEIGHT - lineDistance) / 2 + HEADER_MARGIN_TOP;
+      drawLine(parts.slice(0, mid), firstY);
+      drawLine(parts.slice(mid), firstY + lineDistance);
+    } else {
+      drawLine(parts, UI_HEIGHT / 2 + HEADER_MARGIN_TOP);
     }
 
     if (state.gameOver) {
