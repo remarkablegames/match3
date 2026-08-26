@@ -28,6 +28,10 @@ export function attachInputHandlers(
 ): () => void {
   function handlePointer(x: number, y: number): void {
     const state = getState();
+    if (state.cursor !== null) {
+      state.cursor = null;
+      onDirty();
+    }
     if (state.gameOver) {
       onRestart();
       return;
@@ -48,11 +52,23 @@ export function attachInputHandlers(
     handlePointer(touch.clientX, touch.clientY);
   }
 
-  function moveCursor(deltaRow: number, deltaCol: number): void {
-    const state = getState();
+  function showCursor(state: GameState): Position {
+    state.cursor ??= {
+      col: Math.floor(GRID_SIZE / 2),
+      row: Math.floor(GRID_SIZE / 2),
+    };
+    return state.cursor;
+  }
+
+  function moveCursor(
+    state: GameState,
+    deltaRow: number,
+    deltaCol: number,
+  ): void {
+    const cursor = showCursor(state);
     state.cursor = {
-      col: Math.max(0, Math.min(GRID_SIZE - 1, state.cursor.col + deltaCol)),
-      row: Math.max(0, Math.min(GRID_SIZE - 1, state.cursor.row + deltaRow)),
+      col: Math.max(0, Math.min(GRID_SIZE - 1, cursor.col + deltaCol)),
+      row: Math.max(0, Math.min(GRID_SIZE - 1, cursor.row + deltaRow)),
     };
     onDirty();
   }
@@ -61,23 +77,23 @@ export function attachInputHandlers(
     const state = getState();
     switch (event.key) {
       case 'ArrowUp':
-        moveCursor(-1, 0);
+        moveCursor(state, -1, 0);
         break;
       case 'ArrowDown':
-        moveCursor(1, 0);
+        moveCursor(state, 1, 0);
         break;
       case 'ArrowLeft':
-        moveCursor(0, -1);
+        moveCursor(state, 0, -1);
         break;
       case 'ArrowRight':
-        moveCursor(0, 1);
+        moveCursor(state, 0, 1);
         break;
       case 'Enter':
       case ' ': {
         if (state.gameOver) {
           onRestart();
         } else {
-          onSelectTile(state.cursor);
+          onSelectTile(showCursor(state));
         }
         break;
       }

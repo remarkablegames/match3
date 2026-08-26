@@ -110,6 +110,6 @@ export interface GameState {
   gameOver: boolean;
   /** Whether the game was won. */
   won: boolean;
-  /** Cursor position for keyboard navigation. */
-  cursor: Position;
+  /** Cursor position for keyboard navigation, null when using pointer input. */
+  cursor: Position | null;
 }

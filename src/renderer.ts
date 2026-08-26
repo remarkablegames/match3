@@ -308,7 +308,10 @@ export function createRenderer(
           state.selected !== null &&
           state.selected.row === row &&
           state.selected.col === col;
-        const hovered = state.cursor.row === row && state.cursor.col === col;
+        const hovered =
+          state.cursor !== null &&
+          state.cursor.row === row &&
+          state.cursor.col === col;
         drawTile(row, col, value, visuals[row][col], selected, hovered);
       }
     }

@@ -318,7 +318,7 @@ export function createGameState(mode: GameMode): GameState {
   const level = mode === 'levels' ? 1 : null;
   return {
     busy: false,
-    cursor: { col: Math.floor(GRID_SIZE / 2), row: Math.floor(GRID_SIZE / 2) },
+    cursor: null,
     gameOver: false,
     grid: createPlayableGrid(GRID_SIZE, GRID_SIZE),
     level: level ?? 1,
