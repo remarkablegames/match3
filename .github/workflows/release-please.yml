@@ -51,7 +51,7 @@ jobs:
         shell: bash
         run: |
           echo "app_name=$(jq -r .name package.json)" >> "$GITHUB_OUTPUT"
-          echo "window_title=${app_name^}" >> "$GITHUB_OUTPUT"
+          echo "window_title=$(echo "$app_name" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')" >> "$GITHUB_OUTPUT"
           echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
           echo "platform=$(echo $RUNNER_OS | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
 
