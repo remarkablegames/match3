@@ -8,6 +8,8 @@
 
 Play the game on:
 
+- [Wavedash](https://wavedash.com/games/match3)
+- [itch.io](https://remarkablegames.itch.io/match3)
 - [remarkablegames](https://remarkablegames.org/match3/)
 
 ## Features
