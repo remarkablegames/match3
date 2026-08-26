@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="screenshots/logo.png" alt="Match3" width="300">
+</p>
+
 # Match3
 
 [![build](https://github.com/remarkablegames/match3/actions/workflows/build.yml/badge.svg)](https://github.com/remarkablegames/match3/actions/workflows/build.yml)
