@@ -3,6 +3,8 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  base: './',
+
   resolve: {
     alias: {
       src: resolve(import.meta.dirname, './src'),
