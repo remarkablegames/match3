@@ -8,7 +8,7 @@
 [![test](https://github.com/remarkablegames/match3/actions/workflows/test.yml/badge.svg)](https://github.com/remarkablegames/match3/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/remarkablegames/match3/graph/badge.svg?token=yiIaBuRwzx)](https://codecov.io/gh/remarkablegames/match3)
 
-🌈 **Match3** is a match-3 puzzle game built with JavaScript and the HTML5 canvas. Swap adjacent emoji tiles to create matches of three or more, trigger cascading combos, and chase high scores across three game modes. It was made for [js13kGames 2026](https://js13kgames.com/), where the theme was **Unicorns and Rainbows**.
+🌈 **Match3** is a match-3 puzzle game built with JavaScript and the HTML5 canvas. Swap adjacent emoji tiles to create matches of three or more, trigger cascading combos, and chase high scores across three game modes. It was made for [js13kGames 2026](https://js13kgames.com/games/match3), where the theme was **Unicorns and Rainbows**.
 
 Play the game on:
 
@@ -16,7 +16,7 @@ Play the game on:
 - [itch.io](https://remarkablegames.itch.io/match3)
 - [remarkablegames](https://remarkablegames.org/match3/)
 
-Read the [blog post](https://remarkablegames.org/posts/match3/) and view the [js13k submission](https://js13kgames.com/games/match3).
+Read the [blog post](https://remarkablegames.org/posts/match3/).
 
 ## Features
 
