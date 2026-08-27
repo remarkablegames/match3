@@ -16,7 +16,7 @@ Play the game on:
 - [itch.io](https://remarkablegames.itch.io/match3)
 - [remarkablegames](https://remarkablegames.org/match3/)
 
-Read the [blog post](https://remarkablegames.org/posts/match3/).
+Read the [blog post](https://remarkablegames.org/posts/match3/) or watch the [YouTube Short](https://youtube.com/shorts/kqXlC9TMgxA).
 
 ## Features
 
