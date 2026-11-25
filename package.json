@@ -12,9 +12,9 @@
     "prepare": "husky",
     "preview": "vite preview",
     "start": "vite --open",
-    "test": "vitest",
+    "test": "vitest run",
     "test:ci": "CI=true npm test -- --color --coverage",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.3",
